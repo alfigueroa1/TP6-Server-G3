@@ -196,7 +196,7 @@ main(int argc, char* argv[])
 	std::cout << std::endl << "Start Listening on port " << HELLO_PORT << std::endl;
 	//conquering.startConnection();
 	//std::cout << "Somebody connected to port " << HELLO_PORT << std::endl;
-	//std::cout << "Press Enter to Send Message  " << std::endl;
+	//std::cout << "Press Enter to Send Message  " << std::endl; 
 	//getchar();
 	conquering.receiveMessage();
 	conquering.parseMessage();	//faltaria chequear el valor de retorno de esta, pero no lo hago porque creo que la deberia llamar receive.
