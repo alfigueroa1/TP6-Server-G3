@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <cstdio>
 #include <chrono>
 #include <ctime>
@@ -76,15 +77,13 @@ receiveMessage()
 	size_t len;
 	boost::system::error_code error;
 
-	/*do
+	do
 	{
 		len = socket_forServer->read_some(boost::asio::buffer(buf, buf.max_size()), error);
 		//para futuro, guardar buffer en archivo para leer cosas grandes
 	} while ((error.value() == WSAEWOULDBLOCK));
 	if (error)
 		std::cout << "Error while trying to connect to server " << error.message() << std::endl;
-	*/
-	buf = "GET /path/filename/santiputo.html HTTP/1.1 /x0D /x0A Host: 127.0.0.1 /x0D /x0A asdadasdsofksdfok /x0D /x0A";
 }
 
 bool server::
@@ -149,22 +148,44 @@ parseMessage()		//El metodo valida el mensaje recibido del servidor. Principalme
 void server::
 sendMessage()
 {
+	std::string message;
+	size_t len;
+	boost::system::error_code error;
+
 	std::time_t time = std::time(nullptr);
 	std::string date = std::asctime(std::localtime(&time));
 	time = time + 30;
 	std::string date30 = std::asctime(std::localtime(&time));
 
-	std::string message = RESPONSETRUE(path, length, date, date30);
-	size_t len;
-	boost::system::error_code error;
+	std::fstream htmlPage;
+	htmlPage.open(path, std::ios::in);
+	if (!htmlPage)
+	{
+		message = RESPONSEBAD(date, date30);
+		do
+		{
+			len = socket_forServer->write_some(boost::asio::buffer(message, strlen(message)), error);
+		} while ((error.value() == WSAEWOULDBLOCK));
+		if (error)
+			std::cout << "Error while trying to connect to client " << error.message() << std::endl;
+	}
+	else
+	{
+		message = RESPONSETRUE(path, length, date, date30);
+		do
+		{
+			len = socket_forServer->write_some(boost::asio::buffer(message, strlen(message)), error);
+		} while ((error.value() == WSAEWOULDBLOCK));
+		if (error)
+			std::cout << "Error while trying to connect to client " << error.message() << std::endl;
+		do
+		{
+			len = socket_forServer->write_some(boost::asio::buffer(htmlPage, htmlPage.tellg()), error);
+		} while ((error.value() == WSAEWOULDBLOCK));
+	}
 
 	std::cout << message << std::endl;
-	/*do
-	{
-		len = socket_forServer->write_some(boost::asio::buffer(buf, strlen(buf)), error);
-	} while ((error.value() == WSAEWOULDBLOCK));
-	if (error)
-		std::cout << "Error while trying to connect to server " << error.message() << std::endl;*/
+
 }
 
 
@@ -194,14 +215,12 @@ main(int argc, char* argv[])
 	
 	server conquering;
 	std::cout << std::endl << "Start Listening on port " << HELLO_PORT << std::endl;
-	//conquering.startConnection();
-	//std::cout << "Somebody connected to port " << HELLO_PORT << std::endl;
-	//std::cout << "Press Enter to Send Message  " << std::endl; 
-	//getchar();
+	conquering.startConnection();
+	std::cout << "Somebody connected to port " << HELLO_PORT << std::endl;
 	conquering.receiveMessage();
 	conquering.parseMessage();	//faltaria chequear el valor de retorno de esta, pero no lo hago porque creo que la deberia llamar receive.
 	conquering.sendMessage();
-	//Sleep(50); // Le damos 50ms para que llegue el mensaje antes de cerrar el socket.
+	Sleep(50); // Le damos 50ms para que llegue el mensaje antes de cerrar el socket.
 
 	return 0;
 }
