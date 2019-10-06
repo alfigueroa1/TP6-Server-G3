@@ -164,7 +164,7 @@ sendMessage()
 		message = RESPONSEBAD(date, date30);
 		do
 		{
-			len = socket_forServer->write_some(boost::asio::buffer(message, strlen(message)), error);
+			len = socket_forServer->write_some(boost::asio::buffer(message, message.size()), error);
 		} while ((error.value() == WSAEWOULDBLOCK));
 		if (error)
 			std::cout << "Error while trying to connect to client " << error.message() << std::endl;
@@ -174,12 +174,12 @@ sendMessage()
 		message = RESPONSETRUE(path, length, date, date30);
 		do
 		{
-			len = socket_forServer->write_some(boost::asio::buffer(message, strlen(message)), error);
+			len = socket_forServer->write_some(boost::asio::buffer(message, message.size()), error);
 		} while ((error.value() == WSAEWOULDBLOCK));
 		if (error)
 			std::cout << "Error while trying to connect to client " << error.message() << std::endl;
 		do
-		{
+		{ 
 			len = socket_forServer->write_some(boost::asio::buffer(htmlPage, htmlPage.tellg()), error);
 		} while ((error.value() == WSAEWOULDBLOCK));
 	}
